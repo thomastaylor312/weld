@@ -16,12 +16,11 @@ use crate::{
     writer::Writer,
     BytesMut, JsonValue, ParamMap,
 };
-use atelier_core::model::shapes::ShapeKind;
 use atelier_core::{
     model::{
         shapes::{
             AppliedTraits, HasTraits, ListOrSet, Map as MapShape, MemberShape, Operation, Service,
-            Simple, StructureOrUnion,
+            ShapeKind, Simple, StructureOrUnion,
         },
         values::Value,
         HasIdentity, Identifier, Model, NamespaceID, ShapeID,
@@ -82,6 +81,7 @@ impl<'model> CodeGen for RustCodeGen<'model> {
     fn output_language(&self) -> OutputLanguage {
         OutputLanguage::Rust
     }
+
     /// Initialize code generator and renderer for language output.j
     /// This hook is called before any code is generated and can be used to initialize code generator
     /// and/or perform additional processing before output files are created.
@@ -98,7 +98,13 @@ impl<'model> CodeGen for RustCodeGen<'model> {
         if let Some(model) = model {
             if let Some(packages) = model.metadata_value("package") {
                 let packages: Vec<PackageName> = serde_json::from_value(value_to_json(packages))
-                    .map_err(|e| Error::Model(format!("invalid metadata format for package, expecting format '[{{namespace:\"org.example\",crate:\"path::module\"}}]':  {}", e)))?;
+                    .map_err(|e| {
+                        Error::Model(format!(
+                            "invalid metadata format for package, expecting format \
+                             '[{{namespace:\"org.example\",crate:\"path::module\"}}]':  {}",
+                            e
+                        ))
+                    })?;
                 for p in packages.iter() {
                     self.packages.insert(p.namespace.to_string(), p.clone());
                 }
@@ -345,6 +351,7 @@ impl<'model> RustCodeGen<'model> {
             Ty::Shape(field.target())
         })
     }
+
     /// Write a type name, a primitive or defined type, with or without deref('&') and with or without Option<>
     pub(crate) fn type_string(&self, ty: Ty<'_>) -> Result<String> {
         let mut s = String::new();
@@ -427,8 +434,14 @@ impl<'model> RustCodeGen<'model> {
                             s.push_str(&self.to_type_name(&id.shape_name().to_string()));
                         }
                         _ => {
-                            return Err(Error::Model(format!("undefined crate for namespace {} for symbol {}. Make sure codegen.toml includes all dependent namespaces, and that the dependent .smithy file contains package metadata with crate: value",
-                                                            &id.namespace(), &id)));
+                            return Err(Error::Model(format!(
+                                "undefined crate for namespace {} for symbol {}. Make sure \
+                                 codegen.toml includes all dependent namespaces, and that the \
+                                 dependent .smithy file contains package metadata with crate: \
+                                 value",
+                                &id.namespace(),
+                                &id
+                            )));
                         }
                     }
                 }

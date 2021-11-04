@@ -14,8 +14,7 @@ use crate::{
     writer::Writer,
     Bytes, JsonValue, ParamMap, TomlValue,
 };
-use atelier_core::model::shapes::AppliedTraits;
-use atelier_core::model::{Identifier, Model};
+use atelier_core::model::{shapes::AppliedTraits, Identifier, Model};
 use std::{
     borrow::Borrow,
     collections::BTreeMap,
@@ -477,7 +476,10 @@ impl CodeGen for PolyGen {
 #[allow(dead_code)]
 /// helper function for indenting code (used by python codegen)
 pub fn spaces(indent_level: u8) -> &'static str {
-    const SP: &str = "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ";
+    const SP: &str =
+        "                                                                                         \
+         \
+                                                                                                  ";
     &SP[0..((indent_level * 4) as usize)]
 }
 
@@ -559,6 +561,7 @@ impl CodeGen for NoCodeGen {
     fn output_language(&self) -> OutputLanguage {
         OutputLanguage::Poly
     }
+
     fn get_file_extension(&self) -> &'static str {
         ""
     }
